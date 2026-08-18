@@ -1,0 +1,49 @@
+services:
+  app:
+    build: .
+    env_file: .env
+    environment: { FILESYSTEM_DISK: s3 }
+    ports: ["8000:8000"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_started }
+      minio-init: { condition: service_completed_successfully }
+  horizon:
+    build: .
+    env_file: .env
+    environment: { FILESYSTEM_DISK: s3 }
+    command: php artisan horizon
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_started }
+      minio-init: { condition: service_completed_successfully }
+  scheduler:
+    build: .
+    env_file: .env
+    environment: { FILESYSTEM_DISK: s3 }
+    command: php artisan schedule:work
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_started }
+      minio-init: { condition: service_completed_successfully }
+  postgres:
+    image: postgres:17-alpine
+    environment: { POSTGRES_DB: dataforge, POSTGRES_USER: app, POSTGRES_PASSWORD: app }
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U app"], interval: 5s, timeout: 3s, retries: 10 }
+    volumes: ["postgres-data:/var/lib/postgresql/data"]
+  redis:
+    image: redis:8-alpine
+    command: redis-server --appendonly yes
+    volumes: ["redis-data:/data"]
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment: { MINIO_ROOT_USER: minio, MINIO_ROOT_PASSWORD: minio123 }
+    ports: ["9000:9000", "9001:9001"]
+    volumes: ["minio-data:/data"]
+  minio-init:
+    image: minio/mc:latest
+    depends_on: [minio]
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["until mc alias set local http://minio:9000 minio minio123; do sleep 1; done; mc mb --ignore-existing local/dataforge"]
+volumes: { postgres-data: {}, redis-data: {}, minio-data: {} }

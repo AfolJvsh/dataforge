@@ -1,0 +1,3 @@
+<?php
+namespace App\Models;use App\Domain\Imports\ImportStatus;use Illuminate\Database\Eloquent\Concerns\HasUuids;use Illuminate\Database\Eloquent\Model;
+final class ImportExecution extends Model{use HasUuids;protected $guarded=[];protected function casts():array{return ['status'=>ImportStatus::class,'mapping_snapshot_json'=>'array','metrics_json'=>'array','started_at'=>'datetime','completed_at'=>'datetime','cancel_requested_at'=>'datetime'];}public function chunks(){return $this->hasMany(ImportChunk::class,'execution_id');}public function import(){return $this->belongsTo(DataImport::class,'import_id');}}
