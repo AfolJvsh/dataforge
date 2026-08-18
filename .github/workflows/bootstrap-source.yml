@@ -5,6 +5,8 @@ on:
     paths:
       - '.bootstrap/**'
       - '.github/workflows/bootstrap-source.yml'
+  pull_request:
+    branches: [main]
 permissions:
   contents: write
 jobs:
@@ -13,6 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
       - name: Publish source tree
         shell: bash
