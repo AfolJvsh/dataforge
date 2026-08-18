@@ -1,10 +1,5 @@
 name: Bootstrap full source
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.bootstrap/**'
-      - '.github/workflows/bootstrap-source.yml'
   pull_request:
     branches: [main]
 permissions:
@@ -28,8 +23,12 @@ jobs:
           tar -xJf /tmp/source.tar.xz -C /tmp/source
           ROOT="$(find /tmp/source -mindepth 1 -maxdepth 1 -type d | head -n 1)"
           test -n "$ROOT"
+          cp .github/workflows/bootstrap-source.yml /tmp/bootstrap-source.yml
           find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
           cp -a "$ROOT"/. .
+          rm -f .github/workflows/ci.yml
+          mkdir -p .github/workflows
+          cp /tmp/bootstrap-source.yml .github/workflows/bootstrap-source.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
