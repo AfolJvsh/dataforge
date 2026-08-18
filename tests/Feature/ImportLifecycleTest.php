@@ -38,7 +38,7 @@ final class ImportLifecycleTest extends TestCase
         $this->putJson('/api/imports/'.$import->id.'/mapping', [
             'destination_schema_id' => $schema->id,
             'mappings' => [
-                ['destination_field_id' => $email->id, 'source_column' => 'Email', 'transforms' => [['type' => 'lower']]],
+                ['destination_field_id' => $email->id, 'source_column' => 'Email', 'transforms' => [['type' => 'trim'], ['type' => 'lower']]],
                 ['destination_field_id' => $name->id, 'source_column' => 'Name', 'transforms' => [['type' => 'trim']]],
             ],
             'validation' => ['email' => [['type' => 'required'], ['type' => 'email']]],
